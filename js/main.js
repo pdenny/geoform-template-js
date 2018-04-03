@@ -40,6 +40,7 @@ define([
     "application/SearchSources",
     "vendor/usng",
     "dijit/a11yclick",
+    "esri/tasks/query",
     "dojo/NodeList-traverse",
     "application/wrapper/main-jquery-deps",
     "dojo/domReady!"
@@ -65,7 +66,8 @@ define([
   Search,
   modalTemplate,
   userTemplate,
-  nls, ProjectParameters, webMercatorUtils, Point, GraphicsLayer, ShareModal, localStorageHelper, Graphic, PictureMarkerSymbol, editToolbar, InfoTemplate, Popup, theme, pushpins, SearchSources, usng, a11yclick) {
+  nls, ProjectParameters, webMercatorUtils, Point, GraphicsLayer, ShareModal, localStorageHelper, Graphic, PictureMarkerSymbol, editToolbar, InfoTemplate, Popup, theme, pushpins, SearchSources, usng, a11yclick,
+  EsriQuery) {
 
   var NORTHING_OFFSET = 10000000.0; // (meters)
 
@@ -2255,11 +2257,9 @@ define([
       featureData.geometry = new Point(Number(this.addressGeometry.x), Number(this.addressGeometry.y), this.map.spatialReference);
       //code for apply-edits
       this._formLayer.applyEdits([featureData], null, null, lang.hitch(this, function (addResults) {
-        // Add attachment on success
         if (addResults[0].success && this.isHumanEntry) {
-          if (query(".fileToSubmit", userFormNode).length === 0) {
-            this._resetAndShare();
-          } else {
+          // Add attachment on success
+          if (query(".fileToSubmit", userFormNode).length !== 0) {
             this._openFileUploadStatusModal(query(".fileToSubmit", userFormNode));
             var fileObjArray = [];
             for (var i = 0; i < query(".formToSubmit", userFormNode).length; i++) {
@@ -2268,6 +2268,30 @@ define([
             this.arrPendingAttachments = fileObjArray.reverse();
             this._addAttachment(addResults[0].objectId, dom.byId(this.arrPendingAttachments.pop()));
           }
+          // ugly hack
+          on.once(this._formLayer, "update-end",
+            lang.hitch(this, function (error, info) {
+              var permitIdQuery = new EsriQuery();
+              permitIdQuery.objectIds = [addResults[0].objectId];
+              permitIdQuery.outFields = ["*"];
+              this._formLayer.queryFeatures(
+                permitIdQuery,
+                function (featureSet) {
+                  // Log for development
+                  var message = "\n";
+                  Object.keys(featureSet.features[0].attributes).forEach(function (objKey) {
+                    message += objKey + ": " + featureSet.features[0].attributes[objKey] + "\n";
+                  });
+                  console.log(message);
+                  var permitId = featureSet.features[0].attributes["PermitID"];
+                  window.location.replace("https://kintivo.matsugov.us/Pages/DS/DrivewayPermits/DP_Liability.aspx?PN=" + permitId);
+                  // TODO remove this commented code (was used for testing): window.location.replace("https://pc643.resdat.com/GeoForm?PN=" + permitId);
+                },
+                function (badError) {
+                  alert("error: " + Object.keys(badError) + ":: message = " + badError.message);
+                });
+            }));
+          this._formLayer.refresh();
           return true;
         }
         domConstruct.destroy(query(".errorMessage")[0]);
