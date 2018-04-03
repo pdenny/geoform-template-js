@@ -78,9 +78,17 @@
     <script type="text/javascript" src="js/vendor/offline/offline.min.js"></script>
     <script type="text/javascript" src="js/vendor/IndexedDBShim.min.js"></script>
     <script type="text/javascript">
-        require(["config/templateConfig", "application/template", "application/main"], function (templateOptions, Template, Main) {
+        require(["config/templateConfig", "application/template", "application/main", "esri/urlUtils"], function (templateOptions, Template, Main, urlUtils) {
             // start template
             var myTemplate = new Template(templateOptions);
+urlUtils.addProxyRule({
+    urlPrefix: "https://mapportaltst.matsugov.us/arcgis/sharing/rest/content/items/0212e67f6bba4a37a18b49e5f6e1ec7a",
+    proxyUrl: "http://prttst/DotNet/proxy.ashx"
+});
+urlUtils.addProxyRule({
+    urlPrefix: "https://mapportaltst.matsugov.us/arcgis/sharing/rest/content/items/430d8cb4ab77479c88342a933255edf7",
+    proxyUrl: "http://prttst/DotNet/proxy.ashx"
+});
             // create my main application. Start placing your logic in the main.js file.
             var myApp = new Main();
             // create my main application. Start placing your logic in the main.js file.
