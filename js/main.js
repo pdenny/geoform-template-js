@@ -2284,7 +2284,7 @@ define([
                   });
                   console.log(message);
                   var permitId = featureSet.features[0].attributes["PermitID"];
-                  window.location.replace("https://kintivo.matsugov.us/Pages/DS/DrivewayPermits/DP_Liability.aspx?PN=" + permitId);
+                  window.location.replace("https://kintivo.matsugov.us/Pages/DS/DrivewayPermits/ApplicationComplete.html?PN=" + permitId);
                   // TODO remove this commented code (was used for testing): window.location.replace("https://pc643.resdat.com/GeoForm?PN=" + permitId);
                 },
                 function (badError) {
